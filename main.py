@@ -1,7 +1,6 @@
 import os
 from tic_tac_toe import TicTacToe
 
-
 def main():
     game = TicTacToe()
     while True:

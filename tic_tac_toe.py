@@ -1,5 +1,6 @@
 import random
 from utils import clear_screen
+
 class TicTacToe:
     PLAYER_X = "X"
     PLAYER_O = "O"
