@@ -1,115 +1,80 @@
 import random
-import os
+from utils import clear_screen
+class TicTacToe:
+    PLAYER_X = "X"
+    PLAYER_O = "O"
+    EMPTY = " "
 
-class ticTacToe:
     def __init__(self):
         self.reset()
 
     def print_board(self):
-        print("")
-        print(" " + self.board[0][0] + " | " + self.board[0][1] + " | " + self.board[0][2])
-        print("-----------")
-        print(" " + self.board[1][0] + " | " + self.board[1][1] + " | " + self.board[1][2])
-        print("-----------")
-        print(" " + self.board[2][0] + " | " + self.board[2][1] + " | " + self.board[2][2])
+        clear_screen()
+        board_str = "\n"
+        board_str += "   0   1   2\n"
+        for i, row in enumerate(self.board):
+            board_str += f"{i}  " + " | ".join(row) + " \n"
+            board_str += "  -----------\n"
+        print(board_str.rstrip("  -----------\n"))
 
     def reset(self):
-        self.board = [[" ", " ", " "], [" ", " ", " "], [" ", " ", " "]]
+        self.board = [[self.EMPTY for _ in range(3)] for _ in range(3)]
         self.done = ""
 
     def check_win_or_draw(self):
-        dict_win = {}
+        lines = [
+            self.board[0], self.board[1], self.board[2],
+            [self.board[0][0], self.board[1][0], self.board[2][0]],
+            [self.board[0][1], self.board[1][1], self.board[2][1]],
+            [self.board[0][2], self.board[1][2], self.board[2][2]],
+            # Diagonal
+            [self.board[0][2], self.board[1][1], self.board[2][0]],
+            [self.board[0][0], self.board[1][1], self.board[2][2]]
+        ]
 
-        for i in ["X", "O"]:
-            # Horizontais
-            dict_win[i] = (self.board[0][0] == self.board[0][1] == self.board[0][2] == i)
-            dict_win[i] = (self.board[1][0] == self.board[1][1] == self.board[1][2] == i) or dict_win[i]
-            dict_win[i] = (self.board[2][0] == self.board[2][1] == self.board[2][2] == i) or dict_win[i]
-            # Verticais
-            dict_win[i] = (self.board[0][0] == self.board[1][0] == self.board[2][0] == i) or dict_win[i]
-            dict_win[i] = (self.board[0][1] == self.board[1][1] == self.board[2][1] == i) or dict_win[i]
-            dict_win[i] = (self.board[0][2] == self.board[1][2] == self.board[2][2] == i) or dict_win[i]
-            # Diagonais
-            dict_win[i] = (self.board[0][0] == self.board[1][1] == self.board[2][2] == i) or dict_win[i]
-            dict_win[i] = (self.board[2][0] == self.board[1][1] == self.board[0][2] == i) or dict_win[i]
+        for player in [self.PLAYER_X, self.PLAYER_O]:
+            if any(line == [self.PLAYER_X, self.PLAYER_X, self.PLAYER_X] for line in lines):
+                self.done = self.PLAYER_X.lower()
+                clear_screen()
+                self.print_board()
+                print(f"\n{self.PLAYER_X} venceu!")
+                return
 
-        if dict_win.get("X"):
-            self.done = "x"
-            print("X venceu!")
-            return
-        elif dict_win.get("O"):
-            self.done = "o"
-            print("O venceu!")
-            return
+            if any(line == [self.PLAYER_O, self.PLAYER_O, self.PLAYER_O] for line in lines):
+                self.done = self.PLAYER_O.lower()
+                clear_screen()
+                self.print_board()
+                print(f"\n{self.PLAYER_O} venceu!")
+                return
 
-        c = 0
-        for i in range(3):
-            for j in range(3):
-                if self.board[i][j] != " ":
-                    c += 1
-
-        if c == 9:
+        if all(cell != self.EMPTY for row in self.board for cell in row):
             self.done = "d"
-            print("Empate!")
+            clear_screen()
+            self.print_board()
+            print("\nEmpate!")
             return
 
     def get_player_move(self):
-        invalid_move = True
-
-        while invalid_move:
+        while True:
             try:
-                print("Digite a linha do seu próximo lance:")
-                x = int(input())
+                x = int(input("Digite a linha do seu próximo lance (0-2): "))
+                y = int(input("Digite a coluna do seu próximo lance (0-2): "))
 
-                print("Digite a coluna do seu próximo lance:")
-                y = int(input())
-
-                if x > 2 or x < 0 or y > 2 or y < 0:
-                    print("Coordenadas inválidas")
+                if x not in range(3) or y not in range(3):
+                    print("Coordenadas inválidas. Tente novamente.")
                     continue
 
-                if self.board[x][y] != " ":
-                    print("Posição já preenchida.")
+                if self.board[x][y] != self.EMPTY:
+                    print("Posição já preenchida. Tente novamente.")
                     continue
-            except Exception as e:
-                print(e)
-                continue
 
-            invalid_move = False
-
-        self.board[x][y] = "X"
+                self.board[x][y] = self.PLAYER_X
+                break
+            except ValueError:
+                print("Entrada inválida. Digite um número entre 0 e 2.")
 
     def make_move(self):
-        list_moves = []
-
-        for i in range(3):
-            for j in range(3):
-                if self.board[i][j] == " ":
-                    list_moves.append((i, j))
-
-        if len(list_moves) > 0:
-            x, y = random.choice(list_moves)
-            self.board[x][y] = "O"
-
-tic_tac_toe = ticTacToe()
-
-next = 0
-while next == 0:
-    os.system('cls' if os.name == 'nt' else 'clear')
-    tic_tac_toe.print_board()
-    while tic_tac_toe.done == "":
-        tic_tac_toe.get_player_move()
-        tic_tac_toe.check_win_or_draw()
-        if tic_tac_toe.done != "":
-            break
-        tic_tac_toe.make_move()
-        tic_tac_toe.check_win_or_draw()
-        os.system('cls' if os.name == 'nt' else 'clear')
-        tic_tac_toe.print_board()
-
-    print("Digite 1 para sair do jogo ou qualquer tecla para jogar novamente.")
-
-    next = int(input())
-    if next != 1:
-        tic_tac_toe.reset()
-        next = 0
+        available_moves = [(i, j) for i in range(3) for j in range(3) if self.board[i][j] == self.EMPTY]
+        if available_moves:
+            x, y = random.choice(available_moves)
+            self.board[x][y] = self.PLAYER_O
